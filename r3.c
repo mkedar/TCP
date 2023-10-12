@@ -44,22 +44,27 @@ int main() {
 
     printf("Listening on port %d...\n", port);
 
-    // Infinite loop to handle incoming connections
-    while (1) {
-        client_len = sizeof(client_addr);
-        if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len)) < 0) {
-            perror("Accept failed");
-            continue;
-        }
-
-        // Simply discard the incoming data
-        while (recv(client_fd, buffer, BUFFER_SIZE, 0) > 0) {
-            // Data is received into buffer and discarded
-        }
-
-        close(client_fd);
+    // Accept a single connection
+    client_len = sizeof(client_addr);
+    if ((client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len)) < 0) {
+        perror("Accept failed");
+        exit(EXIT_FAILURE);
     }
 
+    printf("Connected to a client...\n");
+
+    // Continuously read from this single client connection
+    while (1) {
+        if (recv(client_fd, buffer, BUFFER_SIZE, 0) <= 0) {
+            perror("Read error or client disconnected");
+            break;
+        }
+        // Data is received into buffer and discarded
+    }
+
+    printf("Client disconnected or error occurred. Exiting...\n");
+
+    close(client_fd);
     close(server_fd);
     return 0;
 }
